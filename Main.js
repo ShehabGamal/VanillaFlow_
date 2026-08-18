@@ -22,6 +22,45 @@ progressContainer.appendChild(progressLabel);
 progressContainer.appendChild(progressTrack);
 displayPanel.parentNode.insertBefore(progressContainer, filterBar);
 
+let searchContainer = document.createElement("div");
+searchContainer.classList.add("search-container");
+let searchInp = document.createElement("input");
+searchInp.type = "text";
+searchInp.classList.add("search-input");
+searchInp.placeholder = "Search tasks...";
+let searchClearBtn = document.createElement("button");
+searchClearBtn.type = "button";
+searchClearBtn.classList.add("search-clear");
+searchClearBtn.innerHTML = "&times;";
+searchClearBtn.title = "Clear search";
+searchContainer.appendChild(searchInp);
+searchContainer.appendChild(searchClearBtn);
+displayPanel.parentNode.insertBefore(searchContainer, filterBar);
+
+let searchQuery = "";
+let searchDebounceTimer = null;
+
+searchInp.addEventListener("input", () => {
+    searchClearBtn.classList.toggle("visible", searchInp.value.length > 0);
+
+    // Debounce: wait for a short pause in typing before re-rendering.
+    // Cheap here since it's just localStorage + DOM, but this is the same
+    // habit you'd want for a search that hits an API or a large dataset.
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        searchQuery = searchInp.value.trim().toLowerCase();
+        updateElements();
+    }, 120);
+});
+
+searchClearBtn.addEventListener("click", () => {
+    searchInp.value = "";
+    searchQuery = "";
+    searchClearBtn.classList.remove("visible");
+    updateElements();
+    searchInp.focus();
+});
+
 let activeFilter = "All"; // "All" or a specific category name
 
 function getItems() {
@@ -55,6 +94,32 @@ function renderProgress(items) {
     progressFill.style.backgroundColor = `hsl(${percent * 1.2}, 65%, 50%)`;
 
     progressContainer.classList.toggle("complete", total > 0 && percent === 100);
+}
+
+// Escapes user text before it goes into innerHTML, so task text containing
+// < > & can never break the markup (or, in a less friendly app, inject into it).
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Wraps the matched substring in <mark>, case-insensitive. Escapes first so
+// highlighting can never reopen the HTML-injection door escapeHtml just closed.
+function highlightMatch(text, query) {
+    let safe = escapeHtml(text);
+    if (!query) return safe;
+
+    let escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // escape regex metachars
+    let regex = new RegExp(`(${escapedQuery})`, "ig");
+    return safe.replace(regex, "<mark>$1</mark>");
+}
+
+// Single source of truth for whether a task should read as "highlighted":
+// it must satisfy the active category pill AND the search text together,
+// so the two filtering systems narrow the same spotlight instead of fighting.
+function isTaskHighlighted(item, category) {
+    let matchesCategory = activeFilter === "All" || category === activeFilter;
+    let matchesSearch = searchQuery === "" || item.text.toLowerCase().includes(searchQuery);
+    return matchesCategory && matchesSearch;
 }
 
 function getCategories(items) {
@@ -269,10 +334,12 @@ function updateElements() {
         let dueStatus = getDueStatus(item.dueDate, item.completed);
         if (dueStatus === "overdue") division.classList.add("overdue");
 
-        // Spotlight effect: dim non-matching tasks in place instead of hiding them
-        if (activeFilter !== "All") {
+        // Spotlight effect: dim non-matching tasks in place instead of hiding them.
+        // "Matching" now factors in both the category pill and the search text.
+        let filtersActive = activeFilter !== "All" || searchQuery !== "";
+        if (filtersActive) {
             division.classList.add(
-                category === activeFilter ? "spotlight-active" : "spotlight-dim"
+                isTaskHighlighted(item, category) ? "spotlight-active" : "spotlight-dim"
             );
         }
 
@@ -317,7 +384,7 @@ function updateElements() {
         }
 
         let heading = document.createElement("h2");
-        heading.innerHTML = item.text;
+        heading.innerHTML = highlightMatch(item.text, searchQuery);
         heading.title = "Double-click to edit";
         heading.addEventListener("dblclick", () => {
             enterEditMode(item, innerDiv, heading);

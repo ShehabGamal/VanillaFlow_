@@ -331,3 +331,60 @@ body{
     0%, 100% { box-shadow: 0 0 0 0 rgba(139, 195, 74, 0.6); }
     50% { box-shadow: 0 0 0 6px rgba(139, 195, 74, 0); }
 }
+
+/* ---- Search ---- */
+
+.search-container{
+    margin:0 auto;
+    width:800px;
+    max-width: calc(100% - 40px);
+    padding: 0 20px;
+    box-sizing: border-box;
+    position: relative;
+    display:flex;
+    align-items: center;
+}
+.search-input{
+    width:100%;
+    height:38px;
+    border:2px solid #03a9f4;
+    border-radius: 20px;
+    text-indent: 20px;
+    padding-right: 40px;
+    font-size: 14px;
+    font-family: monospace;
+    box-sizing: border-box;
+}
+.search-input:focus{
+    outline:none;
+    border-color: #8bc34a;
+}
+.search-clear{
+    position: absolute;
+    right: 30px;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+.search-clear.visible{
+    opacity: 1;
+    pointer-events: auto;
+}
+.search-clear:hover{
+    color: #c62828;
+}
+
+/* Matched substring inside a task's title */
+.task mark{
+    background-color: #fff59d;
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 2px;
+}
