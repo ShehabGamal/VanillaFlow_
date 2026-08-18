@@ -43,6 +43,20 @@ body{
     outline:none;
     border-color: #8bc34a;
 }
+.date-input{
+    width:140px;
+    height:31px;
+    border:2px solid #607d8b;
+    border-radius: 15px;
+    text-indent: 10px;
+    font-size: 13px;
+    font-family: monospace;
+    color: rgba(0,0,0,0.7);
+}
+.date-input:focus{
+    outline:none;
+    border-color: #8bc34a;
+}
 .add{
     width:150px;
     height:50px;
@@ -238,4 +252,40 @@ body{
     opacity: 1;
     transform: scale(1.01);
     box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+/* ---- Due dates ---- */
+
+.due-badge{
+    display:inline-block;
+    font-size: 10px;
+    font-family: monospace;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+}
+.due-upcoming{
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border-color: #90caf9;
+}
+.due-today{
+    background-color: #fff3e0;
+    color: #ef6c00;
+    border-color: #ffb74d;
+}
+.due-overdue{
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
+}
+
+/* Overdue tasks get a soft red glow layered on top of whatever box-shadow
+   they already have (dragging, spotlight, etc.) rather than overriding
+   the category accent border - urgency and category stay independent signals */
+.task.overdue{
+    box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.35), 0 1px 3px rgba(0,0,0,0.08);
 }

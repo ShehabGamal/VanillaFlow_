@@ -3,6 +3,7 @@ let frmHandle = document.querySelector(".form");
 let textInp = document.querySelector(".input");
 let categoryInp = document.querySelector(".category-input");
 let categoryList = document.querySelector("#category-list");
+let dateInp = document.querySelector(".date-input");
 
 let filterBar = document.createElement("div");
 filterBar.classList.add("filter-bar");
@@ -30,6 +31,26 @@ function hashColor(str) {
 
 function getCategories(items) {
     return [...new Set(items.map((i) => i.category || "Uncategorized"))];
+}
+
+// Returns "overdue" | "today" | "upcoming" | "none".
+// Completed tasks are never flagged overdue - the deadline no longer matters.
+function getDueStatus(dueDate, completed) {
+    if (!dueDate || completed) return "none";
+
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let due = new Date(dueDate + "T00:00:00"); // avoid UTC/local timezone drift
+
+    if (due < today) return "overdue";
+    if (due.getTime() === today.getTime()) return "today";
+    return "upcoming";
+}
+
+function formatDueDate(dueDate) {
+    let due = new Date(dueDate + "T00:00:00");
+    return due.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 // Pills above the list: "All" plus one per category in use, auto-colored.
@@ -86,12 +107,14 @@ frmHandle.onsubmit = function (e) {
         text: textInp.value.trim(),
         completed: false,
         category: categoryInp.value.trim(), // empty string = Uncategorized
+        dueDate: dateInp.value, // empty string = no due date
     };
     listArr.push(todoObj);
     saveItems(listArr);
 
     textInp.value = "";
     categoryInp.value = "";
+    dateInp.value = "";
     updateElements();
 };
 
@@ -214,6 +237,9 @@ function updateElements() {
         division.draggable = true;
         division.style.setProperty("--task-accent", hashColor(category));
 
+        let dueStatus = getDueStatus(item.dueDate, item.completed);
+        if (dueStatus === "overdue") division.classList.add("overdue");
+
         // Spotlight effect: dim non-matching tasks in place instead of hiding them
         if (activeFilter !== "All") {
             division.classList.add(
@@ -252,6 +278,14 @@ function updateElements() {
         badge.style.setProperty("--badge-color", hashColor(category));
         badge.innerHTML = category;
         innerDiv.appendChild(badge);
+
+        if (item.dueDate) {
+            let dueBadge = document.createElement("span");
+            dueBadge.classList.add("due-badge", `due-${dueStatus}`);
+            let label = dueStatus === "overdue" ? "Overdue: " : dueStatus === "today" ? "Due today" : "Due ";
+            dueBadge.innerHTML = dueStatus === "today" ? label : label + formatDueDate(item.dueDate);
+            innerDiv.appendChild(dueBadge);
+        }
 
         let heading = document.createElement("h2");
         heading.innerHTML = item.text;
