@@ -9,6 +9,19 @@ let filterBar = document.createElement("div");
 filterBar.classList.add("filter-bar");
 displayPanel.parentNode.insertBefore(filterBar, displayPanel);
 
+let progressContainer = document.createElement("div");
+progressContainer.classList.add("progress-container");
+let progressLabel = document.createElement("div");
+progressLabel.classList.add("progress-label");
+let progressTrack = document.createElement("div");
+progressTrack.classList.add("progress-track");
+let progressFill = document.createElement("div");
+progressFill.classList.add("progress-fill");
+progressTrack.appendChild(progressFill);
+progressContainer.appendChild(progressLabel);
+progressContainer.appendChild(progressTrack);
+displayPanel.parentNode.insertBefore(progressContainer, filterBar);
+
 let activeFilter = "All"; // "All" or a specific category name
 
 function getItems() {
@@ -27,6 +40,21 @@ function hashColor(str) {
     }
     let hue = Math.abs(hash) % 360;
     return `hsl(${hue}, 65%, 50%)`;
+}
+
+// Updates the "X of Y done" label and the animated fill bar.
+// Fill color shifts red -> green as percent climbs (hue 0 to 120), so the
+// bar communicates progress even before you read the number.
+function renderProgress(items) {
+    let total = items.length;
+    let done = items.filter((i) => i.completed).length;
+    let percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+    progressLabel.innerHTML = total === 0 ? "No tasks yet" : `${done} of ${total} done`;
+    progressFill.style.width = percent + "%";
+    progressFill.style.backgroundColor = `hsl(${percent * 1.2}, 65%, 50%)`;
+
+    progressContainer.classList.toggle("complete", total > 0 && percent === 100);
 }
 
 function getCategories(items) {
@@ -224,6 +252,7 @@ displayPanel.addEventListener("dragover", (e) => {
 function updateElements() {
     let listArr = getItems();
     updateCategoryDatalist(listArr);
+    renderProgress(listArr);
     renderFilterBar(listArr);
     displayPanel.innerHTML = ""; // clear before re-render to avoid duplicates
 
