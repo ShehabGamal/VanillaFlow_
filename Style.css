@@ -1,4 +1,4 @@
- body{
+body{
     margin:0;
     display:flex;
     gap:20px;
@@ -104,6 +104,28 @@
 .move-btn:disabled{
     opacity: 0.3;
     cursor: not-allowed;
+}
+
+/* Inline edit input, matches the h2 it replaces */
+.edit-input{
+    width:100%;
+    font-family: monospace;
+    font-size: 17px;
+    padding: 3px 6px;
+    border: 2px solid #03a9f4;
+    border-radius: 6px;
+    box-sizing: border-box;
+    outline: none;
+}
+.edit-input:focus{
+    border-color: #8bc34a;
+}
+
+.edit-btn{
+    background-color: #03a9f4;
+}
+.edit-btn:hover{
+    background-color: #0288c4;
 }
 
 .task h2{

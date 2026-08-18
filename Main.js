@@ -23,6 +23,51 @@ frmHandle.onsubmit = function (e) {
     updateElements();
 };
 
+// ---- Editing helper ----
+
+function saveTaskText(id, newText) {
+    let trimmed = newText.trim();
+    if (trimmed === "") return; // ignore empty edits, keep original text
+
+    let items = getItems();
+    let target = items.find((e) => e.id === id);
+    if (target) target.text = trimmed;
+    saveItems(items);
+    updateElements();
+}
+
+// Swaps the <h2> for a text <input> pre-filled with the current text.
+// Enter or blur saves, Escape cancels (no change written).
+function enterEditMode(item, innerDiv, heading) {
+    let editInput = document.createElement("input");
+    editInput.type = "text";
+    editInput.classList.add("edit-input");
+    editInput.value = item.text;
+
+    let cancelled = false;
+
+    editInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            editInput.blur(); // triggers save via blur handler below
+        } else if (e.key === "Escape") {
+            cancelled = true;
+            editInput.blur(); // triggers revert via blur handler below
+        }
+    });
+
+    editInput.addEventListener("blur", () => {
+        if (cancelled) {
+            updateElements(); // revert to the original text, discard changes
+        } else {
+            saveTaskText(item.id, editInput.value);
+        }
+    });
+
+    innerDiv.replaceChild(editInput, heading);
+    editInput.focus();
+    editInput.select();
+}
+
 // ---- Reordering helpers ----
 
 function moveItem(id, direction) {
@@ -119,7 +164,20 @@ function updateElements() {
         let innerDiv = document.createElement("div");
         let heading = document.createElement("h2");
         heading.innerHTML = item.text;
+        heading.title = "Double-click to edit";
+        heading.addEventListener("dblclick", () => {
+            enterEditMode(item, innerDiv, heading);
+        });
         innerDiv.appendChild(heading);
+
+        let editBtn = document.createElement("button");
+        editBtn.innerHTML = "&#9998;"; // pencil
+        editBtn.type = "button";
+        editBtn.classList.add("edit-btn");
+        editBtn.title = "Edit task";
+        editBtn.addEventListener("click", () => {
+            enterEditMode(item, innerDiv, heading);
+        });
 
         let completeBtn = document.createElement("button");
         completeBtn.innerHTML = item.completed ? "&#8635;" : "&#10003;";
@@ -156,6 +214,7 @@ function updateElements() {
 
         division.appendChild(reorderControls);
         division.appendChild(innerDiv);
+        division.appendChild(editBtn);
         division.appendChild(completeBtn);
         division.appendChild(delBtn);
         displayPanel.appendChild(division);
