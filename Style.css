@@ -17,7 +17,7 @@ body{
     gap:25px;
 }
 .input{
-    width:600px;
+    width:400px;
     height:35px;
     border:2px solid #03a9f4;
     border-radius: 15px;
@@ -27,6 +27,19 @@ body{
     font-family: monospace;
 }
 .input:focus{
+    outline:none;
+    border-color: #8bc34a;
+}
+.category-input{
+    width:150px;
+    height:35px;
+    border:2px solid #607d8b;
+    border-radius: 15px;
+    text-indent: 15px;
+    font-size: 14px;
+    font-family: monospace;
+}
+.category-input:focus{
     outline:none;
     border-color: #8bc34a;
 }
@@ -63,8 +76,9 @@ body{
     align-items: center;
     font-size: 15px;
     font-family: monospace;
-    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 6px solid var(--task-accent, #ccc);
 }
 
 .task div{
@@ -170,4 +184,58 @@ body{
 }
 .task.completed .complete-btn:hover{
     background-color: #8bc34a;
+}
+
+/* ---- Categories: filter bar, badges, spotlight ---- */
+
+.filter-bar{
+    margin:0 auto;
+    width:800px;
+    max-width: calc(100% - 40px);
+    display:flex;
+    flex-flow: row wrap;
+    gap:10px;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+.filter-pill{
+    background-color: white;
+    color: var(--pill-color, #555);
+    border: 2px solid var(--pill-color, #555);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.filter-pill:hover{
+    transform: scale(1.05);
+}
+.filter-pill.active{
+    background-color: var(--pill-color, #555);
+    color: white;
+}
+
+.category-badge{
+    display:inline-block;
+    background-color: var(--badge-color, #999);
+    color: white;
+    font-size: 10px;
+    font-family: monospace;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+}
+
+/* Spotlight: dim non-matching tasks in place instead of hiding/reflowing them */
+.task.spotlight-dim{
+    opacity: 0.25;
+    transform: scale(0.98);
+}
+.task.spotlight-active{
+    opacity: 1;
+    transform: scale(1.01);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
 }

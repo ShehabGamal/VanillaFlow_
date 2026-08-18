@@ -1,6 +1,14 @@
 let displayPanel = document.querySelector(".tasks");
 let frmHandle = document.querySelector(".form");
 let textInp = document.querySelector(".input");
+let categoryInp = document.querySelector(".category-input");
+let categoryList = document.querySelector("#category-list");
+
+let filterBar = document.createElement("div");
+filterBar.classList.add("filter-bar");
+displayPanel.parentNode.insertBefore(filterBar, displayPanel);
+
+let activeFilter = "All"; // "All" or a specific category name
 
 function getItems() {
     return JSON.parse(window.localStorage.getItem("items")) || [];
@@ -10,16 +18,80 @@ function saveItems(items) {
     window.localStorage.setItem("items", JSON.stringify(items));
 }
 
+// Deterministic color per category name, no manual color picking needed.
+function hashColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 65%, 50%)`;
+}
+
+function getCategories(items) {
+    return [...new Set(items.map((i) => i.category || "Uncategorized"))];
+}
+
+// Pills above the list: "All" plus one per category in use, auto-colored.
+function renderFilterBar(items) {
+    filterBar.innerHTML = "";
+    let categories = getCategories(items);
+
+    if (categories.length === 0) return; // nothing to filter yet
+
+    let allPill = document.createElement("button");
+    allPill.type = "button";
+    allPill.classList.add("filter-pill");
+    if (activeFilter === "All") allPill.classList.add("active");
+    allPill.innerHTML = "All";
+    allPill.addEventListener("click", () => {
+        activeFilter = "All";
+        updateElements();
+    });
+    filterBar.appendChild(allPill);
+
+    categories.forEach((cat) => {
+        let pill = document.createElement("button");
+        pill.type = "button";
+        pill.classList.add("filter-pill");
+        pill.style.setProperty("--pill-color", hashColor(cat));
+        if (cat === activeFilter) pill.classList.add("active");
+        pill.innerHTML = cat;
+        pill.addEventListener("click", () => {
+            activeFilter = cat === activeFilter ? "All" : cat;
+            updateElements();
+        });
+        filterBar.appendChild(pill);
+    });
+}
+
+// Keeps the category datalist (autocomplete) in sync with categories in use.
+function updateCategoryDatalist(items) {
+    categoryList.innerHTML = "";
+    getCategories(items).forEach((cat) => {
+        if (cat === "Uncategorized") return;
+        let option = document.createElement("option");
+        option.value = cat;
+        categoryList.appendChild(option);
+    });
+}
+
 frmHandle.onsubmit = function (e) {
     e.preventDefault();
     if (textInp.value.trim() === "") return;
 
     let listArr = getItems();
-    let todoObj = { id: Date.now(), text: textInp.value.trim(), completed: false };
+    let todoObj = {
+        id: Date.now(),
+        text: textInp.value.trim(),
+        completed: false,
+        category: categoryInp.value.trim(), // empty string = Uncategorized
+    };
     listArr.push(todoObj);
     saveItems(listArr);
 
     textInp.value = "";
+    categoryInp.value = "";
     updateElements();
 };
 
@@ -128,14 +200,26 @@ displayPanel.addEventListener("dragover", (e) => {
 
 function updateElements() {
     let listArr = getItems();
+    updateCategoryDatalist(listArr);
+    renderFilterBar(listArr);
     displayPanel.innerHTML = ""; // clear before re-render to avoid duplicates
 
     listArr.forEach((item, index) => {
+        let category = item.category || "Uncategorized";
+
         let division = document.createElement("div");
         division.classList.add("task");
         if (item.completed) division.classList.add("completed");
         division.dataset.id = item.id;
         division.draggable = true;
+        division.style.setProperty("--task-accent", hashColor(category));
+
+        // Spotlight effect: dim non-matching tasks in place instead of hiding them
+        if (activeFilter !== "All") {
+            division.classList.add(
+                category === activeFilter ? "spotlight-active" : "spotlight-dim"
+            );
+        }
 
         // Drag handle + up/down buttons (drag for desktop, buttons for touch/keyboard)
         let reorderControls = document.createElement("div");
@@ -162,6 +246,13 @@ function updateElements() {
         reorderControls.appendChild(downBtn);
 
         let innerDiv = document.createElement("div");
+
+        let badge = document.createElement("span");
+        badge.classList.add("category-badge");
+        badge.style.setProperty("--badge-color", hashColor(category));
+        badge.innerHTML = category;
+        innerDiv.appendChild(badge);
+
         let heading = document.createElement("h2");
         heading.innerHTML = item.text;
         heading.title = "Double-click to edit";
