@@ -23,14 +23,98 @@ frmHandle.onsubmit = function (e) {
     updateElements();
 };
 
+// ---- Reordering helpers ----
+
+function moveItem(id, direction) {
+    // direction: -1 = up, 1 = down
+    let items = getItems();
+    let index = items.findIndex((e) => e.id === id);
+    let newIndex = index + direction;
+    if (index === -1 || newIndex < 0 || newIndex >= items.length) return;
+
+    [items[index], items[newIndex]] = [items[newIndex], items[index]];
+    saveItems(items);
+    updateElements();
+}
+
+// Figures out which task element the dragged card should land before,
+// based on the vertical midpoint of each sibling. Classic drag-reorder pattern.
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll(".task:not(.dragging)")];
+
+    return draggableElements.reduce(
+        (closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        },
+        { offset: Number.NEGATIVE_INFINITY, element: null }
+    ).element;
+}
+
+// After a drop, read the DOM order back and persist it to localStorage.
+function persistOrderFromDOM() {
+    let items = getItems();
+    let orderedIds = [...displayPanel.querySelectorAll(".task")].map((el) =>
+        Number(el.dataset.id)
+    );
+    let reordered = orderedIds
+        .map((id) => items.find((item) => item.id === id))
+        .filter(Boolean);
+    saveItems(reordered);
+}
+
+displayPanel.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const dragging = displayPanel.querySelector(".dragging");
+    if (!dragging) return;
+
+    const afterElement = getDragAfterElement(displayPanel, e.clientY);
+    if (afterElement == null) {
+        displayPanel.appendChild(dragging);
+    } else {
+        displayPanel.insertBefore(dragging, afterElement);
+    }
+});
+
 function updateElements() {
     let listArr = getItems();
     displayPanel.innerHTML = ""; // clear before re-render to avoid duplicates
 
-    listArr.forEach((item) => {
+    listArr.forEach((item, index) => {
         let division = document.createElement("div");
         division.classList.add("task");
         if (item.completed) division.classList.add("completed");
+        division.dataset.id = item.id;
+        division.draggable = true;
+
+        // Drag handle + up/down buttons (drag for desktop, buttons for touch/keyboard)
+        let reorderControls = document.createElement("div");
+        reorderControls.classList.add("reorder-controls");
+        reorderControls.title = "Drag to reorder";
+
+        let upBtn = document.createElement("button");
+        upBtn.innerHTML = "&#9650;"; // ▲
+        upBtn.type = "button";
+        upBtn.classList.add("move-btn", "move-up");
+        upBtn.title = "Move up";
+        upBtn.disabled = index === 0;
+        upBtn.addEventListener("click", () => moveItem(item.id, -1));
+
+        let downBtn = document.createElement("button");
+        downBtn.innerHTML = "&#9660;"; // ▼
+        downBtn.type = "button";
+        downBtn.classList.add("move-btn", "move-down");
+        downBtn.title = "Move down";
+        downBtn.disabled = index === listArr.length - 1;
+        downBtn.addEventListener("click", () => moveItem(item.id, 1));
+
+        reorderControls.appendChild(upBtn);
+        reorderControls.appendChild(downBtn);
 
         let innerDiv = document.createElement("div");
         let heading = document.createElement("h2");
@@ -61,6 +145,16 @@ function updateElements() {
             updateElements();
         });
 
+        division.addEventListener("dragstart", () => {
+            division.classList.add("dragging");
+        });
+        division.addEventListener("dragend", () => {
+            division.classList.remove("dragging");
+            persistOrderFromDOM();
+            updateElements(); // refresh disabled states on up/down buttons
+        });
+
+        division.appendChild(reorderControls);
         division.appendChild(innerDiv);
         division.appendChild(completeBtn);
         division.appendChild(delBtn);

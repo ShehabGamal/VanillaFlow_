@@ -38,6 +38,7 @@
     font-size: 30px;
     color:white;
     background-color: #03a9f4;
+    cursor:pointer;
 }
 .tasks{
     margin:0 auto;
@@ -62,23 +63,56 @@
     align-items: center;
     font-size: 15px;
     font-family: monospace;
+    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-.task button{
-    background-color: orangered;
-    color:white;
-    border: 2px solid transparent;
-    border-radius: 50%;
-    font-size: 15px;
-    padding:10px 10px;
-}
 .task div{
     width:400px;
 }
 
-/* Claude Edits */
+/* Drag handle + up/down controls */
+.task{
+    cursor: grab;
+}
+.task.dragging{
+    cursor: grabbing;
+    opacity: 0.4;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.reorder-controls{
+    display:flex;
+    flex-flow: column wrap;
+    gap:3px;
+    width:auto !important;
+}
+.move-btn{
+    background-color: #607d8b;
+    color:white;
+    border:2px solid transparent;
+    border-radius: 6px;
+    font-size: 10px;
+    padding:4px 6px;
+    cursor:pointer;
+    line-height: 1;
+    transition: transform 0.15s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+.move-btn:hover:not(:disabled){
+    background-color: #455a64;
+    transform: scale(1.1);
+}
+.move-btn:disabled{
+    opacity: 0.3;
+    cursor: not-allowed;
+}
 
-/* Mark As Complete */
+.task h2{
+    margin:0;
+    font-size:17px;
+    transition: color 0.3s ease, text-decoration-color 0.3s ease;
+}
+
+/* Completed task state */
 .task.completed{
     background-color: #eafaf0;
     opacity: 0.8;
@@ -88,7 +122,7 @@
     text-decoration-color: #8bc34a;
     color: rgba(0,0,0,0.4);
 }
- 
+
 .task button{
     background-color: orangered;
     color:white;
@@ -102,7 +136,7 @@
 .task button:hover{
     transform: scale(1.1);
 }
- 
+
 .complete-btn{
     background-color: #8bc34a;
 }
