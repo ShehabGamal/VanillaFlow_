@@ -1,30 +1,61 @@
+:root{
+    --bg-page: #ffffff;
+    --bg-panel: #f3f3f3;
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --text-primary: rgba(0,0,0,0.7);
+    --text-secondary: rgba(0,0,0,0.6);
+    --text-muted: rgba(0,0,0,0.4);
+    --shadow-card: rgba(0,0,0,0.08);
+    --track-bg: #e0e0e0;
+    --completed-bg: #eafaf0;
+}
+
+body.dark{
+    --bg-page: #121212;
+    --bg-panel: #1c1c1c;
+    --bg-card: #262626;
+    --bg-input: #1c1c1c;
+    --text-primary: rgba(255,255,255,0.85);
+    --text-secondary: rgba(255,255,255,0.6);
+    --text-muted: rgba(255,255,255,0.35);
+    --shadow-card: rgba(0,0,0,0.4);
+    --track-bg: #3a3a3a;
+    --completed-bg: #1c3327;
+}
+
 body{
     margin:0;
     display:flex;
     gap:20px;
     flex-flow: column wrap;
     box-sizing: border-box;
+    background-color: var(--bg-page);
+    transition: background-color 0.3s ease;
 }
 .form{
     display:flex;
     padding:25px 20px;
-    background-color: #f3f3f3;
+    background-color: var(--bg-panel);
     flex-flow: row wrap;
     width:800px;
     margin:0 auto;
     justify-content: center;
     align-items: center;
     gap:25px;
+    transition: background-color 0.3s ease;
 }
 .input{
     width:400px;
     height:35px;
     border:2px solid #03a9f4;
     border-radius: 15px;
-    caret-color: white;
+    caret-color: var(--text-primary);
     text-indent: 25px;
     font-size: 15px;
     font-family: monospace;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
 }
 .input:focus{
     outline:none;
@@ -38,6 +69,8 @@ body{
     text-indent: 15px;
     font-size: 14px;
     font-family: monospace;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
 }
 .category-input:focus{
     outline:none;
@@ -51,7 +84,8 @@ body{
     text-indent: 10px;
     font-size: 13px;
     font-family: monospace;
-    color: rgba(0,0,0,0.7);
+    background-color: var(--bg-input);
+    color: var(--text-primary);
 }
 .date-input:focus{
     outline:none;
@@ -69,7 +103,7 @@ body{
 }
 .tasks{
     margin:0 auto;
-    background-color: #f3f3f3;
+    background-color: var(--bg-panel);
     width:800px;
     display:flex;
     flex-flow: column wrap;
@@ -77,10 +111,11 @@ body{
     align-items: center;
     gap:10px;
     padding:25px 20px;
+    transition: background-color 0.3s ease;
 }
 .task{
-    background-color: white;
-    color:rgba(0, 0, 0,0.7);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
     width:75%;
     display:flex;
     flex-flow: row wrap;
@@ -90,8 +125,8 @@ body{
     align-items: center;
     font-size: 15px;
     font-family: monospace;
-    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, color 0.3s ease;
+    box-shadow: 0 1px 3px var(--shadow-card);
     border-left: 6px solid var(--task-accent, #ccc);
 }
 
@@ -164,13 +199,13 @@ body{
 
 /* Completed task state */
 .task.completed{
-    background-color: #eafaf0;
+    background-color: var(--completed-bg);
     opacity: 0.8;
 }
 .task.completed h2{
     text-decoration: line-through;
     text-decoration-color: #8bc34a;
-    color: rgba(0,0,0,0.4);
+    color: var(--text-muted);
 }
 
 .task button{
@@ -213,7 +248,7 @@ body{
     box-sizing: border-box;
 }
 .filter-pill{
-    background-color: white;
+    background-color: var(--bg-card);
     color: var(--pill-color, #555);
     border: 2px solid var(--pill-color, #555);
     border-radius: 20px;
@@ -302,15 +337,17 @@ body{
 .progress-label{
     font-family: monospace;
     font-size: 14px;
-    color: rgba(0,0,0,0.6);
+    color: var(--text-secondary);
     margin-bottom: 6px;
+    transition: color 0.3s ease;
 }
 .progress-track{
     width:100%;
     height:14px;
-    background-color: #e0e0e0;
+    background-color: var(--track-bg);
     border-radius: 10px;
     overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 .progress-fill{
     height:100%;
@@ -354,6 +391,8 @@ body{
     font-size: 14px;
     font-family: monospace;
     box-sizing: border-box;
+    background-color: var(--bg-input);
+    color: var(--text-primary);
 }
 .search-input:focus{
     outline:none;
@@ -387,4 +426,96 @@ body{
     color: inherit;
     border-radius: 3px;
     padding: 0 2px;
+}
+
+/* ---- Theme toggle ---- */
+
+.theme-toggle{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--text-secondary);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, transform 0.15s ease, border-color 0.3s ease;
+    z-index: 100;
+}
+.theme-toggle:hover{
+    transform: scale(1.1) rotate(15deg);
+}
+
+/* ---- Undo toast ---- */
+
+.undo-toast{
+    position: fixed;
+    bottom: -80px; /* parked off-screen; .visible slides it up */
+    left: 50%;
+    transform: translateX(-50%);
+    display:flex;
+    align-items: center;
+    gap: 16px;
+    background-color: #323232;
+    color: white;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    transition: bottom 0.35s ease;
+    overflow: hidden;
+    z-index: 200;
+    max-width: 90vw;
+}
+.undo-toast.visible{
+    bottom: 24px;
+}
+.undo-message{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60vw;
+}
+.undo-btn{
+    background: none;
+    border: none;
+    color: #8bc34a;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+    flex-shrink: 0;
+}
+.undo-btn:hover{
+    background-color: rgba(139, 195, 74, 0.15);
+}
+/* Countdown bar that shrinks over the undo window. Starts at 0 width and
+   is only animated while .running is present, so re-triggering a delete
+   (see the reflow trick in deleteWithUndo) restarts it cleanly. */
+.undo-bar{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background-color: #8bc34a;
+    transform-origin: left;
+    transform: scaleX(0);
+}
+.undo-bar.running{
+    animation: undo-countdown 5s linear forwards;
+}
+@keyframes undo-countdown{
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }

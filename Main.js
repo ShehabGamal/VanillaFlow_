@@ -5,6 +5,95 @@ let categoryInp = document.querySelector(".category-input");
 let categoryList = document.querySelector("#category-list");
 let dateInp = document.querySelector(".date-input");
 
+// ---- Theme ----
+
+let themeToggleBtn = document.createElement("button");
+themeToggleBtn.type = "button";
+themeToggleBtn.classList.add("theme-toggle");
+document.body.appendChild(themeToggleBtn);
+
+function applyTheme(isDark) {
+    document.body.classList.toggle("dark", isDark);
+    themeToggleBtn.innerHTML = isDark ? "&#9728;" : "&#127769;"; // sun : moon
+    themeToggleBtn.title = isDark ? "Switch to light mode" : "Switch to dark mode";
+}
+
+// Respect a saved choice first; otherwise fall back to the OS-level preference
+// so the app doesn't fight a system dark-mode user on first visit.
+let savedTheme = localStorage.getItem("theme");
+let prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+applyTheme(savedTheme ? savedTheme === "dark" : prefersDark);
+
+themeToggleBtn.addEventListener("click", () => {
+    let isDark = !document.body.classList.contains("dark");
+    applyTheme(isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+});
+
+// ---- Undo delete ----
+
+let undoToast = document.createElement("div");
+undoToast.classList.add("undo-toast");
+let undoMessage = document.createElement("span");
+undoMessage.classList.add("undo-message");
+let undoBtn = document.createElement("button");
+undoBtn.type = "button";
+undoBtn.classList.add("undo-btn");
+undoBtn.innerHTML = "Undo";
+let undoBar = document.createElement("div");
+undoBar.classList.add("undo-bar");
+undoToast.appendChild(undoMessage);
+undoToast.appendChild(undoBtn);
+undoToast.appendChild(undoBar);
+document.body.appendChild(undoToast);
+
+const UNDO_WINDOW_MS = 5000;
+let undoTimer = null;
+let pendingDelete = null; // { item, index } while a toast is showing
+
+function deleteWithUndo(item, index) {
+    // Only one undo window at a time - a second delete while a toast is
+    // showing finalizes the previous one (it's already gone from storage,
+    // there's nothing left to reinstate) and starts a fresh window.
+    clearTimeout(undoTimer);
+    pendingDelete = { item, index };
+
+    let items = getItems().filter((e) => e.id !== item.id);
+    saveItems(items);
+    updateElements();
+
+    undoMessage.innerHTML = `"${escapeHtml(item.text)}" deleted`;
+    undoToast.classList.add("visible");
+
+    // Restart the shrinking countdown bar: removing and re-adding the class
+    // forces the browser to replay the CSS animation from 0 instead of
+    // continuing a still-running one from a previous delete.
+    undoBar.classList.remove("running");
+    void undoBar.offsetWidth; // force reflow so the removal actually registers
+    undoBar.classList.add("running");
+
+    undoTimer = setTimeout(hideUndoToast, UNDO_WINDOW_MS);
+}
+
+function hideUndoToast() {
+    undoToast.classList.remove("visible");
+    undoBar.classList.remove("running");
+    pendingDelete = null;
+}
+
+undoBtn.addEventListener("click", () => {
+    if (!pendingDelete) return;
+    clearTimeout(undoTimer);
+
+    let items = getItems();
+    let restoreIndex = Math.min(pendingDelete.index, items.length);
+    items.splice(restoreIndex, 0, pendingDelete.item);
+    saveItems(items);
+    updateElements();
+
+    hideUndoToast();
+});
+
 let filterBar = document.createElement("div");
 filterBar.classList.add("filter-bar");
 displayPanel.parentNode.insertBefore(filterBar, displayPanel);
@@ -419,9 +508,7 @@ function updateElements() {
         delBtn.classList.add("delete");
         delBtn.title = "Delete task";
         delBtn.addEventListener("click", () => {
-            let items = getItems().filter((e) => e.id !== item.id);
-            saveItems(items);
-            updateElements();
+            deleteWithUndo(item, index);
         });
 
         division.addEventListener("dragstart", () => {
