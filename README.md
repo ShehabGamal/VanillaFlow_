@@ -4,7 +4,7 @@ A vanilla JavaScript todo list app — no frameworks, no libraries, just HTML, C
 
 ## About
 
-This started as a simple `localStorage` todo list and grew, feature by feature, into a small but complete productivity app. It was my first project of this kind, and I used it deliberately to practice patterns that come up constantly in real front-end/app development work — full CRUD, drag-and-drop, debounced search, theming, and UX details like undo.
+This started as a simple `localStorage` todo list when i started learning javascript with **ENG Osama EL-Zero** on his channel **Elzero Web School** on youtube and grew , feature by feature, into a small but complete productivity app. It was my first project of this kind, and I used it deliberately to practice patterns that come up constantly in real front-end/app development work — full CRUD, drag-and-drop, debounced search, theming, and UX details like undo.
 
 I built this collaboratively with **Claude (Anthropic's Sonnet 5 model)**, which helped me implement trickier pieces — native drag-and-drop reordering, a debounced live search that plays nicely with an existing filter system, timezone-safe date handling, CSS custom-property theming — and explained the reasoning behind each pattern rather than just handing over code. It caught a couple of real bugs from my original version too (a duplicate-rendering bug and a classic date-timezone off-by-one). Genuinely useful way to learn while shipping something real.
 
@@ -62,6 +62,10 @@ Then just open `Index.html` in a browser — no server, no install, no build ste
 ## Credits
 
 Built by Shehab Gamal. Expanded and refined with the help of **Claude (Anthropic, Sonnet 5)**.
+
+## Special Thanks
+
+Thanks For Every Coder Who Shares Tricks, Solutions , Explainations and Free Courses that help us to go further in our careers you are many but you serve the same purpose. You Are My Family 🤍🤍🤍
 
 ## License
 
